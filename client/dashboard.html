@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - ServiceN</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Barre de navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="/dashboard" class="logo">
+                <i class="fas fa-concierge-bell"></i> ServiceN
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a>
+                <a href="/dashboard/services"><i class="fas fa-tools"></i> Mes services</a>
+                <a href="/dashboard/messages"><i class="fas fa-envelope"></i> Messages</a>
+                <a href="/dashboard/profile"><i class="fas fa-user"></i> Profil</a>
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar mobile -->
+    <div class="sidebar-mobile" id="sidebarMobile">
+        <div class="sidebar-header">
+            <h3>Menu</h3>
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sidebar-links">
+            <a href="/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a>
+            <a href="/dashboard/services"><i class="fas fa-tools"></i> Mes services</a>
+            <a href="/dashboard/messages"><i class="fas fa-envelope"></i> Messages</a>
+            <a href="/dashboard/profile"><i class="fas fa-user"></i> Profil</a>
+            <button id="logoutBtnMobile" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <main class="dashboard-container">
+        <div class="container">
+            <!-- En-tête du dashboard -->
+            <div class="dashboard-header">
+                <h1 id="welcomeMessage">Bonjour, Chargement...</h1>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-check"></i>
+                        <div>
+                            <h3 id="servicesCount">0</h3>
+                            <p>Services actifs</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-star"></i>
+                        <div>
+                            <h3 id="rating">5.0</h3>
+                            <p>Note moyenne</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <h3 id="clientsCount">0</h3>
+                            <p>Clients satisfaits</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section actions rapides -->
+            <section class="quick-actions">
+                <h2>Actions rapides</h2>
+                <div class="actions-grid">
+                    <a href="/dashboard/services/new" class="action-card">
+                        <i class="fas fa-plus-circle"></i>
+                        <h3>Nouveau service</h3>
+                        <p>Proposez un nouveau service</p>
+                    </a>
+                    <a href="/dashboard/messages" class="action-card">
+                        <i class="fas fa-envelope"></i>
+                        <h3>Messages</h3>
+                        <p>Consultez vos messages</p>
+                    </a>
+                    <a href="/dashboard/profile" class="action-card">
+                        <i class="fas fa-user-edit"></i>
+                        <h3>Modifier profil</h3>
+                        <p>Mettez à jour vos informations</p>
+                    </a>
+                    <a href="/contact/whatsapp" class="action-card">
+                        <i class="fab fa-whatsapp"></i>
+                        <h3>Support</h3>
+                        <p>Contactez-nous sur WhatsApp</p>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Services récents -->
+            <section class="recent-services">
+                <div class="section-header">
+                    <h2>Services récents</h2>
+                    <a href="/dashboard/services" class="btn-view-all">Voir tout</a>
+                </div>
+                <div class="services-list" id="recentServices">
+                    <div class="loading-placeholder">
+                        <i class="fas fa-spinner fa-spin"></i> Chargement des services...
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <div class="container">
+            <p>© 2024 ServiceN Platform • 
+                <a href="/contact/whatsapp">Support WhatsApp</a> • 
+                <a href="/contact/email">Contact Email</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Message d'alerte -->
+    <div id="alertMessage" class="alert" style="display: none;"></div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
