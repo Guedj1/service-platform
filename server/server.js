@@ -6,56 +6,68 @@ const mongoose = require('mongoose');
 const path = require('path');
 const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 
 // Connexion MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB connecté'))
   .catch(err => console.error('❌ MongoDB erreur:', err));
 
-// IMPORTANT: Configuration CORS pour Render
-const corsOptions = {
+// CORS pour Render
+app.use(cors({
   origin: [
     'https://servicesn-platform.onrender.com',
     'http://localhost:3000',
-    'http://localhost:10000'
+    'http://localhost:3001'
   ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Préflight requests
+  credentials: true
+}));
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../client')));
 
-// Sessions - CONFIGURATION CRITIQUE POUR RENDER
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback_secret_for_dev',
+// Proxy trust pour Render (IMPORTANT)
+app.set('trust proxy', 1);
+
+// Sessions - CONFIGURATION SIMPLIFIÉE POUR RENDER
+const sessionConfig = {
+  secret: process.env.SESSION_SECRET || 'dev_secret',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
-    ttl: 14 * 24 * 60 * 60 // 14 jours
+    ttl: 14 * 24 * 60 * 60
   }),
-  cookie: {
-    secure: process.env.NODE_ENV === 'production', // TRUE sur Render
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 14, // 14 jours
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // IMPORTANT
-    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
-  }
-}));
+  cookie: {}
+};
 
-// Debug middleware pour les sessions
+// Ajustement selon l'environnement
+if (process.env.NODE_ENV === 'production') {
+  sessionConfig.cookie = {
+    secure: true,
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 14,
+    sameSite: 'none' // CRITIQUE pour Render
+  };
+} else {
+  sessionConfig.cookie = {
+    secure: false,
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 14,
+    sameSite: 'lax'
+  };
+}
+
+app.use(session(sessionConfig));
+
+// Debug middleware
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   console.log('Session ID:', req.sessionID);
-  console.log('User in session:', req.session.userId ? 'Authentifié' : 'Non authentifié');
+  console.log('User ID in session:', req.session.userId || 'Non authentifié');
+  console.log('Cookie:', req.headers.cookie ? 'Présent' : 'Absent');
   next();
 });
 
@@ -87,7 +99,6 @@ app.get('/services.html', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  // Vérification de session
   if (!req.session.userId) {
     console.log('❌ Accès dashboard refusé: non authentifié');
     return res.redirect('/login');
@@ -117,4 +128,5 @@ app.listen(PORT, () => {
   console.log(`🔗 URL: http://localhost:${PORT}`);
   console.log(`🔒 Secure cookies: ${process.env.NODE_ENV === 'production' ? 'OUI' : 'NON'}`);
   console.log(`🍪 SameSite: ${process.env.NODE_ENV === 'production' ? 'none' : 'lax'}`);
+  console.log(`🔧 Trust proxy: ${process.env.NODE_ENV === 'production' ? 'Activé' : 'Désactivé'}`);
 });
