@@ -95,6 +95,11 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/services.html', (req, res) => {
+app.get('/create-service', (req, res) => {
+  if (!req.session.userId) return res.redirect('/login');
+  if (req.session.user?.role !== 'prestataire') return res.redirect('/dashboard');
+  res.sendFile(path.join(__dirname, '../client', 'create-service.html'));
+});
   res.sendFile(path.join(__dirname, '../client', 'services.html'));
 });
 

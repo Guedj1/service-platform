@@ -13,12 +13,12 @@
         <div class="container">
             <a href="/dashboard" class="logo">
                 <i class="fas fa-concierge-bell"></i> ServiceN
-            </a>
+            </button>
             <div class="nav-links">
-                <a href="/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a>
-                <a href="/dashboard/services"><i class="fas fa-tools"></i> Mes services</a>
-                <a href="/dashboard/messages"><i class="fas fa-envelope"></i> Messages</a>
-                <a href="/dashboard/profile"><i class="fas fa-user"></i> Profil</a>
+                <a href="/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de bord</button>
+                <a href="/dashboard/services"><i class="fas fa-tools"></i> Mes services</button>
+                <a href="/dashboard/messages"><i class="fas fa-envelope"></i> Messages</button>
+                <a href="/dashboard/profile"><i class="fas fa-user"></i> Profil</button>
                 <button id="logoutBtn" class="btn-logout">
                     <i class="fas fa-sign-out-alt"></i> Déconnexion
                 </button>
@@ -38,10 +38,10 @@
             </button>
         </div>
         <div class="sidebar-links">
-            <a href="/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a>
-            <a href="/dashboard/services"><i class="fas fa-tools"></i> Mes services</a>
-            <a href="/dashboard/messages"><i class="fas fa-envelope"></i> Messages</a>
-            <a href="/dashboard/profile"><i class="fas fa-user"></i> Profil</a>
+            <a href="/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de bord</button>
+            <a href="/dashboard/services"><i class="fas fa-tools"></i> Mes services</button>
+            <a href="/dashboard/messages"><i class="fas fa-envelope"></i> Messages</button>
+            <a href="/dashboard/profile"><i class="fas fa-user"></i> Profil</button>
             <button id="logoutBtnMobile" class="btn-logout">
                 <i class="fas fa-sign-out-alt"></i> Déconnexion
             </button>
@@ -83,26 +83,26 @@
             <section class="quick-actions">
                 <h2>Actions rapides</h2>
                 <div class="actions-grid">
-                    <a href="/dashboard/services/new" class="action-card">
+                    <button onclick="window.location.href='/create-service'" class="action-card">
                         <i class="fas fa-plus-circle"></i>
                         <h3>Nouveau service</h3>
                         <p>Proposez un nouveau service</p>
-                    </a>
+                    </button>
                     <a href="/dashboard/messages" class="action-card">
                         <i class="fas fa-envelope"></i>
                         <h3>Messages</h3>
                         <p>Consultez vos messages</p>
-                    </a>
+                    </button>
                     <a href="/dashboard/profile" class="action-card">
                         <i class="fas fa-user-edit"></i>
                         <h3>Modifier profil</h3>
                         <p>Mettez à jour vos informations</p>
-                    </a>
+                    </button>
                     <a href="/contact/whatsapp" class="action-card">
                         <i class="fab fa-whatsapp"></i>
                         <h3>Support</h3>
                         <p>Contactez-nous sur WhatsApp</p>
-                    </a>
+                    </button>
                 </div>
             </section>
 
@@ -110,7 +110,7 @@
             <section class="recent-services">
                 <div class="section-header">
                     <h2>Services récents</h2>
-                    <a href="/dashboard/services" class="btn-view-all">Voir tout</a>
+                    <a href="/dashboard/services" class="btn-view-all">Voir tout</button>
                 </div>
                 <div class="services-list" id="recentServices">
                     <div class="loading-placeholder">
@@ -125,8 +125,8 @@
     <footer class="dashboard-footer">
         <div class="container">
             <p>© 2024 ServiceN Platform • 
-                <a href="/contact/whatsapp">Support WhatsApp</a> • 
-                <a href="/contact/email">Contact Email</a>
+                <a href="/contact/whatsapp">Support WhatsApp</button> • 
+                <a href="/contact/email">Contact Email</button>
             </p>
         </div>
     </footer>
