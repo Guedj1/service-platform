@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - ServiceN</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo"><i class="fas fa-concierge-bell"></i> ServiceN</a>
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-home"></i> Accueil</a>
+                <a href="/services.html" class="active"><i class="fas fa-tools"></i> Services</a>
+                <a href="/login"><i class="fas fa-sign-in-alt"></i> Connexion</a>
+                <a href="/register"><i class="fas fa-user-plus"></i> Inscription</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>Tous les Services</h1>
+        
+        <div class="filters">
+            <input type="text" id="searchInput" placeholder="Rechercher un service...">
+            <select id="categoryFilter">
+                <option value="">Toutes catégories</option>
+                <option value="Plomberie">Plomberie</option>
+                <option value="Électricité">Électricité</option>
+                <option value="Menuiserie">Menuiserie</option>
+                <option value="Coiffure">Coiffure</option>
+                <option value="Cours">Cours</option>
+                <option value="Informatique">Informatique</option>
+            </select>
+        </div>
+
+        <div class="services-container" id="servicesList">
+            <div class="loading">Chargement des services...</div>
+        </div>
+
+        <div class="cta-section">
+            <h2>Vous proposez un service ?</h2>
+            <p>Rejoignez notre plateforme et commencez à toucher des clients dès aujourd'hui.</p>
+            <a href="/register?role=prestataire" class="btn-primary">Devenir Prestataire</a>
+        </div>
+    </main>
+
+    <script src="js/services.js"></script>
+</body>
+</html>
