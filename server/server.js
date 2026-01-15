@@ -27,7 +27,7 @@ app.use(cors({
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../client')));
+app.use(express.static(path.join(__dirname, '../client'), { index: 'index.html' }));
 
 // Proxy trust pour Render (IMPORTANT)
 app.set('trust proxy', 1);
@@ -83,7 +83,6 @@ app.use('/api/services', serviceRoutes);
 
 // ===== ROUTES PAGES HTML =====
 
-app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client', 'index.html'));
 });
 
