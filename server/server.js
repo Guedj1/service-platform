@@ -96,6 +96,28 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/services.html', (req, res) => {
+app.get('/create-service', (req, res) => {
+  console.log('=== DEBUG CREATE-SERVICE ===');
+  console.log('Session ID:', req.sessionID);
+  console.log('User ID:', req.session.userId);
+  console.log('User object:', req.session.user);
+  console.log('User role:', req.session.user?.role);
+  console.log('Is authenticated:', !!req.session.userId);
+  console.log('Is prestataire:', req.session.user?.role === 'prestataire');
+  
+  if (!req.session.userId) {
+    console.log('❌ Redirection: non authentifié');
+    return res.redirect('/login');
+  }
+  
+  if (req.session.user?.role !== 'prestataire') {
+    console.log(`❌ Redirection: rôle "${req.session.user?.role}" n'est pas prestataire`);
+    return res.redirect('/dashboard');
+  }
+  
+  console.log('✅ Accès autorisé');
+  res.sendFile(path.join(__dirname, '../client', 'create-service.html'));
+});
   res.sendFile(path.join(__dirname, '../client', 'services.html'));
 });
 
@@ -109,18 +131,6 @@ app.get('/dashboard', (req, res) => {
 });
 
 // === NOUVELLE ROUTE IMPORTANTE ===
-app.get('/create-service', (req, res) => {
-  if (!req.session.userId) {
-    console.log('❌ Accès create-service refusé: non authentifié');
-    return res.redirect('/login');
-  }
-  if (req.session.user?.role !== 'prestataire') {
-    console.log('❌ Accès create-service refusé: non prestataire');
-    return res.redirect('/dashboard');
-  }
-  console.log('✅ Accès create-service autorisé pour:', req.session.userId);
-  res.sendFile(path.join(__dirname, '../client', 'create-service.html'));
-});
 
 // Redirections contact
 app.get('/contact/whatsapp', (req, res) => {
