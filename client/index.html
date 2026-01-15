@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceN Platform - Accueil</title>
+    <title>ServiceN Platform - Votre plateforme de services au Sénégal</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
             <a href="/" class="logo">
-                <i class="fas fa-concierge-bell"></i> ServiceN
+                <i class="fas fa-concierge-bell"></i> ServiceN Platform
             </a>
             <div class="nav-links">
-                <a href="/"><i class="fas fa-home"></i> Accueil</a>
-                <a href="/#services"><i class="fas fa-tools"></i> Services</a>
+                <a href="/" class="active"><i class="fas fa-home"></i> Accueil</a>
+                <a href="/services.html"><i class="fas fa-tools"></i> Services</a>
                 <a href="/#about"><i class="fas fa-info-circle"></i> À propos</a>
                 <a href="/login" class="btn-login"><i class="fas fa-sign-in-alt"></i> Connexion</a>
                 <a href="/register" class="btn-register"><i class="fas fa-user-plus"></i> Inscription</a>
@@ -23,74 +24,141 @@
         </div>
     </nav>
 
+    <!-- Hero Section -->
     <header class="hero">
         <div class="container">
-            <h1>Trouvez le Service Qu'il Vous Faut</h1>
-            <p>Plombiers, électriciens, menuisiers, coiffeurs et bien plus...</p>
+            <h1>Votre Solution pour Tous les Services</h1>
+            <p>Trouvez des prestataires qualifiés près de chez vous ou proposez vos services</p>
             <div class="cta-buttons">
-                <a href="/register" class="btn-primary">Commencer</a>
-                <a href="/#services" class="btn-secondary">Nos Services</a>
+                <a href="/register?role=client" class="btn-primary">
+                    <i class="fas fa-search"></i> Trouver un Service
+                </a>
+                <a href="/register?role=prestataire" class="btn-secondary">
+                    <i class="fas fa-briefcase"></i> Devenir Prestataire
+                </a>
             </div>
         </div>
     </header>
 
-    <section id="services" class="services">
+    <!-- Services Preview -->
+    <section id="services-preview" class="services">
         <div class="container">
-            <h2>Nos Catégories de Services</h2>
+            <h2>Services Populaires</h2>
             <div class="services-grid">
                 <div class="service-card">
-                    <i class="fas fa-wrench"></i>
-                    <h3>Réparation</h3>
-                    <p>Plomberie, électricité, serrurerie</p>
+                    <i class="fas fa-faucet"></i>
+                    <h3>Plomberie</h3>
+                    <p>Réparation fuites, installations</p>
+                    <a href="/services.html?categorie=Plomberie">Voir les prestataires →</a>
                 </div>
                 <div class="service-card">
-                    <i class="fas fa-paint-brush"></i>
-                    <h3>Beauté</h3>
-                    <p>Coiffure, maquillage, soins</p>
+                    <i class="fas fa-bolt"></i>
+                    <h3>Électricité</h3>
+                    <p>Installation, dépannage</p>
+                    <a href="/services.html?categorie=Électricité">Voir les prestataires →</a>
                 </div>
                 <div class="service-card">
-                    <i class="fas fa-graduation-cap"></i>
-                    <h3>Cours</h3>
-                    <p>Soutien scolaire, langues, musique</p>
+                    <i class="fas fa-cut"></i>
+                    <h3>Coiffure</h3>
+                    <p>À domicile ou en salon</p>
+                    <a href="/services.html?categorie=Coiffure">Voir les prestataires →</a>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-laptop"></i>
                     <h3>Informatique</h3>
-                    <p>Dépannage, formation, développement</p>
+                    <p>Dépannage, formation</p>
+                    <a href="/services.html?categorie=Informatique">Voir les prestataires →</a>
                 </div>
+            </div>
+            <div class="text-center">
+                <a href="/services.html" class="btn-primary">
+                    <i class="fas fa-list"></i> Voir Tous les Services
+                </a>
             </div>
         </div>
     </section>
 
-    <section id="about" class="about">
+    <!-- How it Works -->
+    <section id="how-it-works" class="about">
         <div class="container">
-            <h2>Pourquoi Choisir ServiceN ?</h2>
+            <h2>Comment ça marche ?</h2>
             <div class="features">
                 <div class="feature">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Sécurisé</h3>
-                    <p>Paiements sécurisés et profils vérifiés</p>
+                    <div class="step-number">1</div>
+                    <i class="fas fa-user-plus"></i>
+                    <h3>Inscrivez-vous</h3>
+                    <p>Créez votre compte gratuitement</p>
                 </div>
                 <div class="feature">
-                    <i class="fas fa-bolt"></i>
-                    <h3>Rapide</h3>
-                    <p>Réponse en moins de 24h</p>
+                    <div class="step-number">2</div>
+                    <i class="fas fa-search"></i>
+                    <h3>Trouvez ou Proposez</h3>
+                    <p>Recherchez un service ou proposez le vôtre</p>
                 </div>
                 <div class="feature">
-                    <i class="fas fa-star"></i>
-                    <h3>Qualité</h3>
-                    <p>Prestataires évalués par la communauté</p>
+                    <div class="step-number">3</div>
+                    <i class="fas fa-handshake"></i>
+                    <h3>Contactez</h3>
+                    <p>Mettez-vous en relation via WhatsApp ou appel</p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Stats -->
+    <section id="stats" class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat">
+                    <i class="fas fa-users"></i>
+                    <h3 id="usersCount">50+</h3>
+                    <p>Utilisateurs</p>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-concierge-bell"></i>
+                    <h3 id="servicesCount">10+</h3>
+                    <p>Services proposés</p>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>Dakar</h3>
+                    <p>Première ville</p>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-star"></i>
+                    <h3>100%</h3>
+                    <p>Satisfaction</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="cta-final">
+        <div class="container">
+            <h2>Prêt à Commencer ?</h2>
+            <p>Rejoignez la première plateforme de services au Sénégal</p>
+            <div class="cta-buttons">
+                <a href="/register?role=client" class="btn-primary btn-large">
+                    <i class="fas fa-rocket"></i> Commencer Maintenant
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>ServiceN Platform</h3>
-                    <p>Votre plateforme de services au Sénégal</p>
+                    <p>Votre plateforme de confiance pour tous les services au Sénégal</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Liens Rapides</h3>
+                    <a href="/services.html">Services</a>
+                    <a href="/login">Connexion</a>
+                    <a href="/register">Inscription</a>
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
@@ -102,10 +170,56 @@
                     </a>
                 </div>
             </div>
-            <p class="copyright">© 2024 ServiceN Platform. Tous droits réservés.</p>
+            <p class="copyright">
+                © 2024 ServiceN Platform. Tous droits réservés. 
+                <br>Développé avec <i class="fas fa-heart"></i> pour le Sénégal
+            </p>
         </div>
     </footer>
 
+    <!-- JavaScript -->
     <script src="js/main.js"></script>
+    <script>
+        // Animation compteurs
+        function animateCounter(element, target) {
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(current) + '+';
+            }, 30);
+        }
+
+        // Au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            // Récupérer les stats via API
+            fetch('/api/services')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const servicesCount = data.services.length;
+                        document.getElementById('servicesCount').textContent = servicesCount + '+';
+                        animateCounter(document.getElementById('servicesCount'), servicesCount);
+                    }
+                });
+            
+            // Animation au scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.service-card, .feature').forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
 </body>
 </html>
