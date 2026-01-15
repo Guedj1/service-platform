@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Services - ServiceN</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Dashboard -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="/dashboard" class="logo">
+                <i class="fas fa-concierge-bell"></i> ServiceN
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a>
+                <a href="/mes-services.html" class="active"><i class="fas fa-tools"></i> Mes Services</a>
+                <a href="/services.html"><i class="fas fa-search"></i> Rechercher</a>
+                <a href="/create-service"><i class="fas fa-plus-circle"></i> Nouveau</a>
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-tools"></i> Mes Services</h1>
+            <a href="/create-service" class="btn-primary">
+                <i class="fas fa-plus"></i> Nouveau Service
+            </a>
+        </div>
+
+        <!-- Filtres -->
+        <div class="filters">
+            <select id="filterStatus">
+                <option value="all">Tous les services</option>
+                <option value="active">Actifs seulement</option>
+                <option value="inactive">Inactifs</option>
+            </select>
+            <input type="text" id="searchMyServices" placeholder="Rechercher dans mes services...">
+        </div>
+
+        <!-- Liste des services -->
+        <div class="services-container" id="myServicesList">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Chargement de vos services...
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <i class="fas fa-concierge-bell"></i>
+                <div>
+                    <h3 id="totalServices">0</h3>
+                    <p>Services totaux</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-eye"></i>
+                <div>
+                    <h3 id="activeServices">0</h3>
+                    <p>Services actifs</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-money-bill-wave"></i>
+                <div>
+                    <h3 id="totalRevenue">0</h3>
+                    <p>Revenu potentiel</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal d'édition -->
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Modifier le Service</h2>
+            <form id="editServiceForm">
+                <input type="hidden" id="editServiceId">
+                
+                <div class="form-group">
+                    <label>Titre</label>
+                    <input type="text" id="editTitre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="editDescription" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prix (FCFA)</label>
+                        <input type="number" id="editPrix" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Statut</label>
+                        <select id="editDisponible">
+                            <option value="true">Actif</option>
+                            <option value="false">Inactif</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                    <button type="button" onclick="closeEditModal()" class="btn-secondary">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/mes-services.js"></script>
+</body>
+</html>
