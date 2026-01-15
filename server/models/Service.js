@@ -67,4 +67,4 @@ ServiceSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('Service', Service.js);
+module.exports = mongoose.model('Service', ServiceSchema);
