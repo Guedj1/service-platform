@@ -4,88 +4,145 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créer un Service - ServiceN</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin: 5px 0; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #4361ee; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; }
+        .alert { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d1e7dd; color: #0f5132; }
+        .error { background: #f8d7da; color: #842029; }
+    </style>
 </head>
-<body class="auth-page">
-    <div class="auth-container">
-        <div class="auth-card">
-            <a href="/dashboard" class="back-home"><i class="fas fa-arrow-left"></i> Retour au dashboard</a>
-            
-            <div class="auth-header">
-                <i class="fas fa-plus-circle auth-icon"></i>
-                <h1>Créer un Service</h1>
-                <p>Proposez votre service à la communauté</p>
-            </div>
-
-            <form id="createServiceForm" class="auth-form">
-                <div class="form-group">
-                    <label for="titre"><i class="fas fa-heading"></i> Titre du service</label>
-                    <input type="text" id="titre" name="titre" required placeholder="Ex: Réparation de plomberie" maxlength="100">
-                    <small class="form-hint">Maximum 100 caractères</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="description"><i class="fas fa-align-left"></i> Description</label>
-                    <textarea id="description" name="description" rows="4" required placeholder="Décrivez votre service..." maxlength="500"></textarea>
-                    <small class="form-hint">Maximum 500 caractères</small>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="categorie"><i class="fas fa-tag"></i> Catégorie</label>
-                        <select id="categorie" name="categorie" required>
-                            <option value="">Sélectionnez une catégorie</option>
-                            <option value="Plomberie">Plomberie</option>
-                            <option value="Électricité">Électricité</option>
-                            <option value="Menuiserie">Menuiserie</option>
-                            <option value="Coiffure">Coiffure</option>
-                            <option value="Cours">Cours</option>
-                            <option value="Informatique">Informatique</option>
-                            <option value="Nettoyage">Nettoyage</option>
-                            <option value="Autre">Autre</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="prix"><i class="fas fa-money-bill-wave"></i> Prix (FCFA)</label>
-                        <input type="number" id="prix" name="prix" required placeholder="Ex: 15000" min="0" step="100">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="localisation"><i class="fas fa-map-marker-alt"></i> Localisation</label>
-                    <input type="text" id="localisation" name="localisation" required placeholder="Ex: Dakar, Plateau" value="Dakar">
-                </div>
-
-                <div class="form-group">
-                    <label for="images"><i class="fas fa-images"></i> Images (optionnel)</label>
-                    <input type="text" id="images" name="images" placeholder="URLs d'images séparées par des virgules">
-                    <small class="form-hint">URLs séparées par des virgules</small>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary btn-auth" id="submitBtn">
-                        <span id="submitText">Créer le service</span>
-                        <span id="submitLoading" class="loading" style="display: none;">
-                            <i class="fas fa-spinner fa-spin"></i> Création en cours...
-                        </span>
-                    </button>
-                    
-                    <button type="button" class="btn-secondary btn-auth" onclick="window.location.href='/dashboard'">
-                        Annuler
-                    </button>
-                </div>
-            </form>
-
-            <div class="auth-footer">
-                <p><i class="fas fa-lightbulb"></i> Conseil : Soyez précis dans la description</p>
-            </div>
+<body>
+    <h1>📝 Créer un Nouveau Service</h1>
+    <p>Proposez votre service à la communauté ServiceN</p>
+    
+    <div id="alert" class="alert" style="display:none;"></div>
+    
+    <form id="serviceForm">
+        <div class="form-group">
+            <label for="titre">Titre du service *</label>
+            <input type="text" id="titre" name="titre" placeholder="Ex: Réparation de plomberie" required>
         </div>
-    </div>
-
-    <div id="alertMessage" class="alert" style="display: none;"></div>
-
-    <script src="js/create-service.js"></script>
+        
+        <div class="form-group">
+            <label for="description">Description *</label>
+            <textarea id="description" name="description" rows="4" placeholder="Décrivez votre service en détail..." required></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="categorie">Catégorie *</label>
+            <select id="categorie" name="categorie" required>
+                <option value="">Sélectionnez</option>
+                <option value="Plomberie">Plomberie</option>
+                <option value="Électricité">Électricité</option>
+                <option value="Menuiserie">Menuiserie</option>
+                <option value="Coiffure">Coiffure</option>
+                <option value="Cours">Cours</option>
+                <option value="Informatique">Informatique</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="prix">Prix (FCFA) *</label>
+            <input type="number" id="prix" name="prix" placeholder="Ex: 15000" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="localisation">Localisation *</label>
+            <input type="text" id="localisation" name="localisation" value="Dakar" required>
+        </div>
+        
+        <button type="submit" id="submitBtn">✅ Créer le Service</button>
+        <button type="button" onclick="window.location.href='/dashboard'">🔙 Retour</button>
+    </form>
+    
+    <script>
+        document.getElementById('serviceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '⏳ Création en cours...';
+            submitBtn.disabled = true;
+            
+            const formData = {
+                titre: document.getElementById('titre').value,
+                description: document.getElementById('description').value,
+                categorie: document.getElementById('categorie').value,
+                prix: parseInt(document.getElementById('prix').value),
+                localisation: document.getElementById('localisation').value
+            };
+            
+            try {
+                const response = await fetch('/api/services', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                const alertDiv = document.getElementById('alert');
+                alertDiv.style.display = 'block';
+                
+                if (data.success) {
+                    alertDiv.className = 'alert success';
+                    alertDiv.textContent = '✅ Service créé avec succès ! Redirection...';
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    alertDiv.className = 'alert error';
+                    alertDiv.textContent = '❌ Erreur: ' + (data.message || 'Erreur inconnue');
+                }
+            } catch (error) {
+                document.getElementById('alert').className = 'alert error';
+                document.getElementById('alert').textContent = '❌ Erreur de connexion au serveur';
+                document.getElementById('alert').style.display = 'block';
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Vérifier l'authentification
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/check', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (!data.isAuthenticated) {
+                    window.location.href = '/login';
+                    return false;
+                }
+                
+                if (data.user.role !== 'prestataire') {
+                    alert('Cette page est réservée aux prestataires');
+                    window.location.href = '/dashboard';
+                    return false;
+                }
+                
+                return true;
+            } catch (error) {
+                window.location.href = '/login';
+                return false;
+            }
+        }
+        
+        // Au chargement
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!await checkAuth()) {
+                window.location.href = '/login';
+            }
+        });
+    </script>
 </body>
 </html>
