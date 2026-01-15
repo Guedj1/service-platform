@@ -20,38 +20,20 @@
 
             <form id="createServiceForm" class="auth-form">
                 <div class="form-group">
-                    <label for="titre">
-                        <i class="fas fa-heading"></i> Titre du service
-                    </label>
-                    <input 
-                        type="text" 
-                        id="titre" 
-                        name="titre" 
-                        required
-                        placeholder="Ex: Réparation de plomberie"
-                        maxlength="100">
+                    <label for="titre"><i class="fas fa-heading"></i> Titre du service</label>
+                    <input type="text" id="titre" name="titre" required placeholder="Ex: Réparation de plomberie" maxlength="100">
                     <small class="form-hint">Maximum 100 caractères</small>
                 </div>
 
                 <div class="form-group">
-                    <label for="description">
-                        <i class="fas fa-align-left"></i> Description
-                    </label>
-                    <textarea 
-                        id="description" 
-                        name="description" 
-                        rows="4"
-                        required
-                        placeholder="Décrivez votre service en détail..."
-                        maxlength="500"></textarea>
+                    <label for="description"><i class="fas fa-align-left"></i> Description</label>
+                    <textarea id="description" name="description" rows="4" required placeholder="Décrivez votre service..." maxlength="500"></textarea>
                     <small class="form-hint">Maximum 500 caractères</small>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="categorie">
-                            <i class="fas fa-tag"></i> Catégorie
-                        </label>
+                        <label for="categorie"><i class="fas fa-tag"></i> Catégorie</label>
                         <select id="categorie" name="categorie" required>
                             <option value="">Sélectionnez une catégorie</option>
                             <option value="Plomberie">Plomberie</option>
@@ -66,42 +48,19 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="prix">
-                            <i class="fas fa-money-bill-wave"></i> Prix (FCFA)
-                        </label>
-                        <input 
-                            type="number" 
-                            id="prix" 
-                            name="prix" 
-                            required
-                            placeholder="Ex: 15000"
-                            min="0"
-                            step="100">
+                        <label for="prix"><i class="fas fa-money-bill-wave"></i> Prix (FCFA)</label>
+                        <input type="number" id="prix" name="prix" required placeholder="Ex: 15000" min="0" step="100">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="localisation">
-                        <i class="fas fa-map-marker-alt"></i> Localisation
-                    </label>
-                    <input 
-                        type="text" 
-                        id="localisation" 
-                        name="localisation" 
-                        required
-                        placeholder="Ex: Dakar, Plateau"
-                        value="Dakar">
+                    <label for="localisation"><i class="fas fa-map-marker-alt"></i> Localisation</label>
+                    <input type="text" id="localisation" name="localisation" required placeholder="Ex: Dakar, Plateau" value="Dakar">
                 </div>
 
                 <div class="form-group">
-                    <label for="images">
-                        <i class="fas fa-images"></i> Images (optionnel)
-                    </label>
-                    <input 
-                        type="text" 
-                        id="images" 
-                        name="images" 
-                        placeholder="URLs d'images séparées par des virgules">
+                    <label for="images"><i class="fas fa-images"></i> Images (optionnel)</label>
+                    <input type="text" id="images" name="images" placeholder="URLs d'images séparées par des virgules">
                     <small class="form-hint">URLs séparées par des virgules</small>
                 </div>
 
@@ -120,12 +79,11 @@
             </form>
 
             <div class="auth-footer">
-                <p><i class="fas fa-lightbulb"></i> Conseil : Soyez précis dans la description pour attirer plus de clients</p>
+                <p><i class="fas fa-lightbulb"></i> Conseil : Soyez précis dans la description</p>
             </div>
         </div>
     </div>
 
-    <!-- Message d'alerte -->
     <div id="alertMessage" class="alert" style="display: none;"></div>
 
     <script src="js/create-service.js"></script>

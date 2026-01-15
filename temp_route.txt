@@ -1,0 +1,5 @@
+app.get('/create-service', (req, res) => {
+  if (!req.session.userId) return res.redirect('/login');
+  if (req.session.user?.role !== 'prestataire') return res.redirect('/dashboard');
+  res.sendFile(path.join(__dirname, '../client', 'create-service.html'));
+});
