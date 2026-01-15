@@ -18,7 +18,8 @@ app.use(cors({
   origin: [
     'https://servicesn-platform.onrender.com',
     'http://localhost:3000',
-    'http://localhost:3001'
+    'http://localhost:3001',
+    'http://localhost:3002'
   ],
   credentials: true
 }));
@@ -31,7 +32,7 @@ app.use(express.static(path.join(__dirname, '../client')));
 // Proxy trust pour Render (IMPORTANT)
 app.set('trust proxy', 1);
 
-// Sessions - CONFIGURATION SIMPLIFIÉE POUR RENDER
+// Sessions
 const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'dev_secret',
   resave: false,
@@ -43,13 +44,12 @@ const sessionConfig = {
   cookie: {}
 };
 
-// Ajustement selon l'environnement
 if (process.env.NODE_ENV === 'production') {
   sessionConfig.cookie = {
     secure: true,
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 14,
-    sameSite: 'none' // CRITIQUE pour Render
+    sameSite: 'none'
   };
 } else {
   sessionConfig.cookie = {
@@ -81,7 +81,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/services', serviceRoutes);
 
-// Routes pages HTML
+// ===== ROUTES PAGES HTML =====
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client', 'index.html'));
 });
@@ -95,11 +96,6 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/services.html', (req, res) => {
-app.get('/create-service', (req, res) => {
-  if (!req.session.userId) return res.redirect('/login');
-  if (req.session.user?.role !== 'prestataire') return res.redirect('/dashboard');
-  res.sendFile(path.join(__dirname, '../client', 'create-service.html'));
-});
   res.sendFile(path.join(__dirname, '../client', 'services.html'));
 });
 
@@ -112,6 +108,20 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../client', 'dashboard.html'));
 });
 
+// === NOUVELLE ROUTE IMPORTANTE ===
+app.get('/create-service', (req, res) => {
+  if (!req.session.userId) {
+    console.log('❌ Accès create-service refusé: non authentifié');
+    return res.redirect('/login');
+  }
+  if (req.session.user?.role !== 'prestataire') {
+    console.log('❌ Accès create-service refusé: non prestataire');
+    return res.redirect('/dashboard');
+  }
+  console.log('✅ Accès create-service autorisé pour:', req.session.userId);
+  res.sendFile(path.join(__dirname, '../client', 'create-service.html'));
+});
+
 // Redirections contact
 app.get('/contact/whatsapp', (req, res) => {
   res.redirect('https://wa.me/221761642285?text=Bonjour%20ServiceN%20Platform');
@@ -121,7 +131,7 @@ app.get('/contact/email', (req, res) => {
   res.redirect('mailto:louis.cicariot.tek.workspace@gmail.com?subject=ServiceN%20Platform');
 });
 
-// Page 404
+// Page 404 - DOIT ÊTRE LA DERNIÈRE ROUTE
 app.get('*', (req, res) => {
   res.status(404).sendFile(path.join(__dirname, '../client', '404.html'));
 });
