@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../client'), { index: 'index.html' }));
 
-// Proxy trust pour Render (IMPORTANT)
+// Proxy trust pour Render
 app.set('trust proxy', 1);
 
 // Sessions
@@ -83,6 +83,8 @@ app.use('/api/services', serviceRoutes);
 
 // ===== ROUTES PAGES HTML =====
 
+// Page d'accueil
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client', 'index.html'));
 });
 
@@ -95,35 +97,6 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/services.html', (req, res) => {
-app.get('/create-service', (req, res) => {
-  console.log('=== DEBUG CREATE-SERVICE ===');
-  console.log('Session ID:', req.sessionID);
-  console.log('User ID:', req.session.userId);
-  console.log('User object:', req.session.user);
-  console.log('User role:', req.session.user?.role);
-  console.log('Is authenticated:', !!req.session.userId);
-  console.log('Is prestataire:', req.session.user?.role === 'prestataire');
-  
-  if (!req.session.userId) {
-    console.log('❌ Redirection: non authentifié');
-    return res.redirect('/login');
-  }
-  
-  if (req.session.user?.role !== 'prestataire') {
-    console.log(`❌ Redirection: rôle "${req.session.user?.role}" n'est pas prestataire`);
-    return res.redirect('/dashboard');
-  }
-  
-  console.log('✅ Accès autorisé');
-  res.sendFile(path.join(__dirname, '../client', 'create-service.html'));
-});
-
-app.get('/mes-services.html', (req, res) => {
-  if (!req.session.userId) return res.redirect('/login');
-  if (req.session.user?.role !== 'prestataire') return res.redirect('/dashboard');
-  res.sendFile(path.join(__dirname, '../client', 'mes-services.html'));
-});
-
   res.sendFile(path.join(__dirname, '../client', 'services.html'));
 });
 
@@ -136,7 +109,31 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../client', 'dashboard.html'));
 });
 
-// === NOUVELLE ROUTE IMPORTANTE ===
+app.get('/create-service', (req, res) => {
+  if (!req.session.userId) {
+    console.log('❌ Accès create-service refusé: non authentifié');
+    return res.redirect('/login');
+  }
+  if (req.session.user?.role !== 'prestataire') {
+    console.log('❌ Accès create-service refusé: non prestataire');
+    return res.redirect('/dashboard');
+  }
+  console.log('✅ Accès create-service autorisé pour:', req.session.userId);
+  res.sendFile(path.join(__dirname, '../client', 'create-service.html'));
+});
+
+app.get('/mes-services.html', (req, res) => {
+  if (!req.session.userId) {
+    console.log('❌ Accès mes-services refusé: non authentifié');
+    return res.redirect('/login');
+  }
+  if (req.session.user?.role !== 'prestataire') {
+    console.log('❌ Accès mes-services refusé: non prestataire');
+    return res.redirect('/dashboard');
+  }
+  console.log('✅ Accès mes-services autorisé pour:', req.session.userId);
+  res.sendFile(path.join(__dirname, '../client', 'mes-services.html'));
+});
 
 // Redirections contact
 app.get('/contact/whatsapp', (req, res) => {
