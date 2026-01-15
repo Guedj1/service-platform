@@ -118,6 +118,13 @@ app.get('/create-service', (req, res) => {
   console.log('✅ Accès autorisé');
   res.sendFile(path.join(__dirname, '../client', 'create-service.html'));
 });
+
+app.get('/mes-services.html', (req, res) => {
+  if (!req.session.userId) return res.redirect('/login');
+  if (req.session.user?.role !== 'prestataire') return res.redirect('/dashboard');
+  res.sendFile(path.join(__dirname, '../client', 'mes-services.html'));
+});
+
   res.sendFile(path.join(__dirname, '../client', 'services.html'));
 });
 
