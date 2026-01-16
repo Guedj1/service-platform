@@ -7,12 +7,17 @@ const path = require('path');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const app = express();
+
+// PORT pour Render (utilise process.env.PORT, sinon 3000 en local)
 const PORT = process.env.PORT || 3000;
 
-console.log('🚀 ServiceN Platform - Version Pro');
+console.log('🚀 ServiceN Platform - Version Render Optimisée');
+console.log('📊 Port:', PORT);
+console.log('🌐 NODE_ENV:', process.env.NODE_ENV || 'development');
 
-// MongoDB
+// MongoDB - IMPORTANT: utiliser la variable Render
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/servicen';
+
 mongoose.connect(MONGODB_URI, {
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
@@ -20,31 +25,50 @@ mongoose.connect(MONGODB_URI, {
 .then(() => console.log('✅ MongoDB connecté'))
 .catch(err => console.log('⚠️  MongoDB:', err.message));
 
-// Middleware
+// ========== CONFIGURATION RENDER ==========
+
+// CORS - autoriser toutes les origines pour le moment
 app.use(cors({
-    origin: ['https://servicesn-platform.onrender.com', 'http://localhost:3000', 'http://192.168.1.128:3333'],
+    origin: true,  // Accepter toutes les origines
     credentials: true
 }));
+
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Session
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'servicen-pro-secret-2024',
+// Configuration session spéciale pour Render
+app.set('trust proxy', 1);  // Important pour Render
+
+const sessionConfig = {
+    secret: process.env.SESSION_SECRET || 'render-session-secret-2024',
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: MONGODB_URI }),
+    store: MongoStore.create({
+        mongoUrl: MONGODB_URI,
+        ttl: 14 * 24 * 60 * 60
+    }),
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 7
     }
-}));
+};
+
+// Désactiver le store si MongoDB n'est pas disponible
+if (!process.env.MONGODB_URI) {
+    delete sessionConfig.store;
+    console.log('⚠️  Mode session sans MongoDB (mémoire)');
+}
+
+app.use(session(sessionConfig));
 
 // ========== MODÈLES ==========
-const User = mongoose.model('User', {
+const userSchema = new mongoose.Schema({
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
     nom: { type: String, required: true },
@@ -54,7 +78,7 @@ const User = mongoose.model('User', {
     createdAt: { type: Date, default: Date.now }
 });
 
-const Service = mongoose.model('Service', {
+const serviceSchema = new mongoose.Schema({
     titre: { type: String, required: true },
     description: { type: String, required: true },
     prix: { type: Number, required: true },
@@ -63,277 +87,218 @@ const Service = mongoose.model('Service', {
     createdAt: { type: Date, default: Date.now }
 });
 
-// ========== HELPERS ==========
+const User = mongoose.model('User', userSchema);
+const Service = mongoose.model('Service', serviceSchema);
+
+// ========== MIDDLEWARE ==========
 const requireAuth = (req, res, next) => {
-    if (!req.session.userId) return res.redirect('/login');
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
     next();
 };
 
-// Fonction helper pour générer le HTML de base
-const baseHTML = (title, content, req) => {
-    const isLoggedIn = !!req.session.userId;
-    
-    return `<!DOCTYPE html>
-    <html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${title} - ServiceN Platform</title>
-        <link rel="stylesheet" href="/css/style.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    </head>
-    <body>
-        <nav class="navbar">
-            <div class="container">
-                <a href="/" class="logo">
-                    <span class="logo-icon">🚀</span>
-                    ServiceN Platform
-                </a>
-                <div class="nav-links">
-                    ${isLoggedIn ? 
-                        `<a href="/dashboard" class="nav-link">
-                            <i class="fas fa-chart-line"></i> Dashboard
-                        </a>
-                        <a href="/create-service" class="nav-link">
-                            <i class="fas fa-plus-circle"></i> Créer service
-                        </a>
-                        <a href="/logout" class="btn btn-primary">
-                            <i class="fas fa-sign-out-alt"></i> Déconnexion
-                        </a>` 
-                        : 
-                        `<a href="/login" class="nav-link">
-                            <i class="fas fa-sign-in-alt"></i> Connexion
-                        </a>
-                        <a href="/register" class="btn btn-primary">
-                            <i class="fas fa-user-plus"></i> S'inscrire
-                        </a>`
-                    }
-                </div>
-            </div>
-        </nav>
-        
-        ${content}
-        
-        <footer class="footer">
-            <div class="container">
-                <p>© 2024 ServiceN Platform - Plateforme professionnelle</p>
-                <p>Dashboard local: <a href="http://192.168.1.128:3333" style="color: #93c5fd;">192.168.1.128:3333</a></p>
-            </div>
-        </footer>
-        
-        <script src="/js/main.js"></script>
-    </body>
-    </html>`;
-};
+// ========== ROUTES SIMPLES MAIS FONCTIONNELLES ==========
 
-// ========== ROUTES ==========
-
-// 1. ACCUEIL
+// 1. PAGE D'ACCUEIL - TOUJOURS RÉPONDRE
 app.get('/', (req, res) => {
     const isLoggedIn = !!req.session.userId;
     
-    const content = `
-        <section class="hero">
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ServiceN Platform - Accueil</title>
+            <style>
+                body {
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    margin: 0;
+                    padding: 0;
+                    color: white;
+                    min-height: 100vh;
+                }
+                .container {
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 40px 20px;
+                    text-align: center;
+                }
+                h1 {
+                    font-size: 3em;
+                    margin-bottom: 20px;
+                }
+                .btn {
+                    display: inline-block;
+                    padding: 15px 30px;
+                    margin: 10px;
+                    background: white;
+                    color: #667eea;
+                    text-decoration: none;
+                    border-radius: 10px;
+                    font-weight: bold;
+                    font-size: 1.1em;
+                }
+                .features {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 20px;
+                    margin: 40px 0;
+                }
+                .feature {
+                    background: rgba(255,255,255,0.1);
+                    padding: 20px;
+                    border-radius: 10px;
+                }
+                .status {
+                    background: rgba(255,255,255,0.1);
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin-top: 30px;
+                }
+            </style>
+        </head>
+        <body>
             <div class="container">
-                <h1>ServiceN Platform <span style="color: #f59e0b;">Pro</span></h1>
-                <p>La plateforme professionnelle pour créer, gérer et vendre vos services en ligne</p>
+                <h1>🚀 ServiceN Platform</h1>
+                <p style="font-size: 1.2em;">Plateforme professionnelle de services</p>
                 
-                <div style="margin-top: 3rem;">
+                <div class="features">
+                    <div class="feature">
+                        <h3>📝 Création</h3>
+                        <p>Créez vos services facilement</p>
+                    </div>
+                    <div class="feature">
+                        <h3>💰 Gestion</h3>
+                        <p>Suivez vos revenus</p>
+                    </div>
+                    <div class="feature">
+                        <h3>👥 Clients</h3>
+                        <p>Développez votre clientèle</p>
+                    </div>
+                </div>
+                
+                <div>
                     ${isLoggedIn ? 
-                        `<a href="/create-service" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Créer un service
-                        </a>` 
+                        `<a href="/dashboard" class="btn">📊 Tableau de bord</a>
+                         <a href="/create-service" class="btn">📝 Créer un service</a>` 
                         : 
-                        `<a href="/register" class="btn btn-primary">
-                            <i class="fas fa-rocket"></i> Commencer gratuitement
-                        </a>`
+                        `<a href="/register" class="btn">📋 S'inscrire</a>
+                         <a href="/login" class="btn">🔐 Se connecter</a>`
                     }
                 </div>
-            </div>
-        </section>
-        
-        <section class="features">
-            <div class="container">
-                <h2 style="text-align: center; font-size: 2.5rem;">Fonctionnalités Professionnelles</h2>
                 
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">💼</div>
-                        <h3>Création Pro</h3>
-                        <p>Interface moderne pour créer vos services</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">💰</div>
-                        <h3>Gestion Financière</h3>
-                        <p>Suivez vos revenus et factures</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">📊</div>
-                        <h3>Dashboard Avancé</h3>
-                        <p>Statistiques détaillées de votre activité</p>
-                    </div>
+                <div class="status">
+                    <p>✅ Serveur actif sur Render | Port: ${PORT}</p>
+                    <p>👤 ${isLoggedIn ? `Connecté: ${req.session.email}` : 'Non connecté'}</p>
                 </div>
             </div>
-        </section>
-    `;
-    
-    res.send(baseHTML('Accueil', content, req));
+        </body>
+        </html>
+    `);
 });
 
 // 2. INSCRIPTION
 app.get('/register', (req, res) => {
     if (req.session.userId) return res.redirect('/dashboard');
     
-    const content = `
-        <div class="form-container">
-            <h1 class="form-title">Inscription Professionnelle</h1>
-            
-            <form id="registerForm" action="/api/auth/register" method="POST">
-                <div class="form-group">
-                    <label class="form-label">Nom & Prénom</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <input type="text" name="nom" class="form-control" placeholder="Nom" required>
-                        <input type="text" name="prenom" class="form-control" placeholder="Prénom" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="votre@entreprise.com" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Mot de passe</label>
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">
-                    Créer mon compte pro
-                </button>
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Inscription - ServiceN</title>
+            <style>
+                body { font-family: Arial; padding: 40px; max-width: 400px; margin: 0 auto; }
+                input { width: 100%; padding: 12px; margin: 10px 0; }
+                button { background: #4CAF50; color: white; padding: 15px; width: 100%; border: none; }
+            </style>
+        </head>
+        <body>
+            <h1>Inscription</h1>
+            <form action="/api/auth/register" method="POST">
+                <input name="nom" placeholder="Nom" required>
+                <input name="prenom" placeholder="Prénom" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Mot de passe" required>
+                <button type="submit">S'inscrire</button>
             </form>
-            
-            <div style="text-align: center; margin-top: 2rem;">
-                <p>Déjà un compte ? <a href="/login">Se connecter</a></p>
-            </div>
-        </div>
-    `;
-    
-    res.send(baseHTML('Inscription', content, req));
+            <p><a href="/login">Déjà un compte ?</a> | <a href="/">Accueil</a></p>
+        </body>
+        </html>
+    `);
 });
 
 // 3. CONNEXION
 app.get('/login', (req, res) => {
     if (req.session.userId) return res.redirect('/dashboard');
     
-    const content = `
-        <div class="form-container">
-            <h1 class="form-title">Connexion Professionnelle</h1>
-            
-            <form id="loginForm" action="/api/auth/login" method="POST">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="votre@email.com" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Mot de passe</label>
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">
-                    Se connecter
-                </button>
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Connexion - ServiceN</title></head>
+        <body>
+            <h1>Connexion</h1>
+            <form action="/api/auth/login" method="POST">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Mot de passe" required>
+                <button type="submit">Se connecter</button>
             </form>
-            
-            <div style="text-align: center; margin-top: 2rem;">
-                <p>Pas de compte ? <a href="/register">S'inscrire</a></p>
-            </div>
-        </div>
-    `;
-    
-    res.send(baseHTML('Connexion', content, req));
+            <p><a href="/register">Pas de compte ?</a> | <a href="/">Accueil</a></p>
+        </body>
+        </html>
+    `);
 });
 
-// 4. CREATE-SERVICE (Conserver l'existant amélioré)
+// 4. CREATE-SERVICE (PAGE IMPORTANTE)
 app.get('/create-service', requireAuth, (req, res) => {
-    const content = `
-        <div class="form-container">
-            <h1 class="form-title">Créer un Service Professionnel</h1>
-            
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Créer Service - ServiceN</title>
+            <style>
+                body { font-family: Arial; padding: 20px; max-width: 600px; margin: 0 auto; }
+                input, textarea, select { width: 100%; padding: 10px; margin: 5px 0; }
+                button { background: #4CAF50; color: white; padding: 12px; width: 100%; border: none; }
+            </style>
+        </head>
+        <body>
+            <h1>📝 Créer un service</h1>
+            <p>Connecté: ${req.session.email}</p>
             <form action="/api/services/create" method="POST">
-                <div class="form-group">
-                    <label class="form-label">Titre du service *</label>
-                    <input type="text" name="title" class="form-control" placeholder="Ex: Développement web React" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Description *</label>
-                    <textarea name="description" class="form-control" rows="5" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Prix (FCFA) *</label>
-                    <input type="number" name="price" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Catégorie</label>
-                    <select name="category" class="form-control">
-                        <option value="informatique">Informatique</option>
-                        <option value="design">Design</option>
-                        <option value="marketing">Marketing</option>
-                    </select>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">
-                    Publier le service
-                </button>
+                <input type="text" name="title" placeholder="Titre" required>
+                <textarea name="description" placeholder="Description" rows="4" required></textarea>
+                <input type="number" name="price" placeholder="Prix FCFA" required>
+                <select name="category">
+                    <option value="informatique">Informatique</option>
+                    <option value="design">Design</option>
+                    <option value="marketing">Marketing</option>
+                </select>
+                <button type="submit">Publier</button>
             </form>
-        </div>
-    `;
-    
-    res.send(baseHTML('Créer Service', content, req));
+            <p><a href="/dashboard">← Retour</a></p>
+        </body>
+        </html>
+    `);
 });
 
 // 5. DASHBOARD
-app.get('/dashboard', requireAuth, async (req, res) => {
-    let servicesCount = 0;
-    
-    try {
-        servicesCount = await Service.countDocuments({ userId: req.session.userId });
-    } catch (error) {
-        console.error('Erreur stats:', error);
-    }
-    
-    const content = `
-        <div class="dashboard">
-            <div class="container">
-                <h1>Tableau de Bord Professionnel</h1>
-                <p>Bienvenue ${req.session.prenom || ''}</p>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Services Actifs</h3>
-                        <div class="stat-number">${servicesCount}</div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <h3>Revenus</h3>
-                        <div class="stat-number">0 FCFA</div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 3rem;">
-                    <a href="/create-service" class="btn btn-primary">
-                        Créer un nouveau service
-                    </a>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    res.send(baseHTML('Dashboard', content, req));
+app.get('/dashboard', requireAuth, (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Dashboard - ServiceN</title></head>
+        <body>
+            <h1>📊 Tableau de bord</h1>
+            <p>Bienvenue ${req.session.prenom || 'Utilisateur'}!</p>
+            <p>Email: ${req.session.email}</p>
+            <p><a href="/create-service">Créer un service</a></p>
+            <p><a href="/logout">Déconnexion</a></p>
+        </body>
+        </html>
+    `);
 });
 
 // 6. DÉCONNEXION
@@ -344,19 +309,21 @@ app.get('/logout', (req, res) => {
 
 // ========== API ROUTES ==========
 
-// Inscription
+// API - Inscription
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { nom, prenom, email, password } = req.body;
         
-        // Vérifier email
-        const existing = await User.findOne({ email });
-        if (existing) {
+        // Vérifier si email existe
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
             return res.json({ success: false, message: 'Email déjà utilisé' });
         }
         
-        // Créer utilisateur
+        // Hasher mot de passe
         const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Créer utilisateur
         const user = new User({
             nom, prenom, email, password: hashedPassword, role: 'prestataire'
         });
@@ -368,41 +335,46 @@ app.post('/api/auth/register', async (req, res) => {
         req.session.nom = user.nom;
         req.session.prenom = user.prenom;
         
-        res.json({ success: true, message: 'Compte créé!', redirect: '/dashboard' });
+        res.json({ success: true, message: 'Inscription réussie!', redirect: '/dashboard' });
         
     } catch (error) {
+        console.error('Erreur inscription:', error);
         res.json({ success: false, message: 'Erreur inscription' });
     }
 });
 
-// Connexion
+// API - Connexion
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
+        // Chercher utilisateur
         const user = await User.findOne({ email });
         if (!user) {
             return res.json({ success: false, message: 'Email incorrect' });
         }
         
-        const valid = await bcrypt.compare(password, user.password);
-        if (!valid) {
+        // Vérifier mot de passe
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
             return res.json({ success: false, message: 'Mot de passe incorrect' });
         }
         
+        // Session
         req.session.userId = user._id;
         req.session.email = user.email;
         req.session.nom = user.nom;
         req.session.prenom = user.prenom;
         
-        res.json({ success: true, message: 'Connecté!', redirect: '/dashboard' });
+        res.json({ success: true, message: 'Connexion réussie!', redirect: '/dashboard' });
         
     } catch (error) {
+        console.error('Erreur connexion:', error);
         res.json({ success: false, message: 'Erreur connexion' });
     }
 });
 
-// Créer service
+// API - Créer service
 app.post('/api/services/create', requireAuth, async (req, res) => {
     try {
         const { title, description, price, category } = req.body;
@@ -414,6 +386,7 @@ app.post('/api/services/create', requireAuth, async (req, res) => {
             categorie: category,
             userId: req.session.userId
         });
+        
         await service.save();
         
         res.json({ 
@@ -423,12 +396,51 @@ app.post('/api/services/create', requireAuth, async (req, res) => {
         });
         
     } catch (error) {
+        console.error('Erreur création service:', error);
         res.json({ success: false, message: 'Erreur création' });
     }
 });
 
-// Démarrer
-app.listen(PORT, () => {
-    console.log(`🎉 ServiceN Platform Pro - Port: ${PORT}`);
-    console.log(`🔗 https://servicesn-platform.onrender.com`);
+// ========== ROUTE TEST ==========
+app.get('/test', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Serveur ServiceN fonctionnel',
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        timestamp: new Date().toISOString()
+    });
+});
+
+// ========== ROUTE 404 ==========
+app.get('*', (req, res) => {
+    res.status(404).send(`
+        <h1>404 - Page non trouvée</h1>
+        <p>La page ${req.url} n'existe pas.</p>
+        <a href="/">Retour à l'accueil</a>
+    `);
+});
+
+// ========== DÉMARRAGE ==========
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`
+==========================================
+🎉 SERVICE N PLATFORM - RENDER READY
+==========================================
+✅ Serveur démarré sur le port ${PORT}
+🌐 Environnement: ${process.env.NODE_ENV || 'development'}
+🔗 URL Render: https://servicesn-platform.onrender.com
+🔗 Dashboard local: http://192.168.1.128:3333
+==========================================
+📋 Routes disponibles:
+   • GET  /               - Page d'accueil
+   • GET  /register       - Inscription
+   • GET  /login          - Connexion
+   • GET  /create-service - Création service
+   • GET  /dashboard      - Tableau de bord
+   • GET  /test           - Test API
+   • POST /api/auth/*     - API auth
+   • POST /api/services/* - API services
+==========================================
+    `);
 });
