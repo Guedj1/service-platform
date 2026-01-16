@@ -649,3 +649,57 @@ const Message = mongoose.model('Message', messageSchema);
 const generateConversationId = (userId1, userId2) => {
     return [userId1, userId2].sort().join('_');
 };
+
+// ========== MESSAGERIE SIMPLE ==========
+app.get("/messagerie", requireAuth, (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Messagerie - ServiceN</title>
+            <style>
+                body { font-family: Arial; padding: 40px; background: #f0f2f5; }
+                .messagerie-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+                h1 { color: #333; }
+                .feature-card { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 10px; border-left: 4px solid #4CAF50; }
+                .btn { display: inline-block; padding: 10px 20px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="messagerie-container">
+                <h1>📨 Messagerie ServiceN</h1>
+                <p><strong>Connecté en tant que:</strong> ${req.session.email}</p>
+                
+                <div class="feature-card">
+                    <h3>🚧 Fonctionnalité en développement</h3>
+                    <p>Le système de messagerie complet est en cours de développement.</p>
+                    <p><strong>Prochainement disponible:</strong></p>
+                    <ul>
+                        <li>Messages en temps réel entre prestataires</li>
+                        <li>Notifications de nouveaux messages</li>
+                        <li>Historique des conversations</li>
+                        <li>Recherche dans les messages</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <p><strong>Pour communiquer maintenant:</strong></p>
+                    <p>Utilisez les coordonnées fournies dans les fiches de service ou contactez l'administrateur.</p>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <a href="/dashboard" class="btn">← Retour au dashboard</a>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
+// Route API pour la messagerie (placeholder)
+app.post("/api/messagerie/envoyer", requireAuth, (req, res) => {
+    res.json({ 
+        success: true, 
+        message: "Système de messagerie en développement. Fonctionnalité bientôt disponible." 
+    });
+});
