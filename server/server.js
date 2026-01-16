@@ -79,12 +79,11 @@ const serviceRoutes = require('./routes/services');
 
 
 // ========== PAGE D'ACCUEIL RENDER ==========
-app.get('/', (req, res) => {
-    res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
             <title>ServiceN Platform</title>
+// Route racine unique
+app.get('/', (req, res) => {
+    res.redirect('/create-service?v=4');
+});
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
@@ -161,11 +160,6 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client', 'login.html'));
-});
-
-app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client', 'register.html'));
 });
 
 app.get('/services.html', (req, res) => {
@@ -182,10 +176,8 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/create-service', (req, res) => {
-  if (!req.session.userId) {
-    console.log('❌ Accès create-service refusé: non authentifié');
-    return res.redirect('/login');
-  }
+    res.send('<h1>Formulaire Service</h1><form><input><button>Créer</button></form>');
+});
   if (req.session.user?.role !== 'prestataire') {
     console.log('❌ Accès create-service refusé: non prestataire');
     return res.redirect('/dashboard');
@@ -230,3 +222,4 @@ app.listen(PORT, () => {
   console.log(`🍪 SameSite: ${process.env.NODE_ENV === 'production' ? 'none' : 'lax'}`);
   console.log(`🔧 Trust proxy: ${process.env.NODE_ENV === 'production' ? 'Activé' : 'Désactivé'}`);
 });
+app.get('/', (req, res) => { res.redirect('/create-service?v=4'); });
