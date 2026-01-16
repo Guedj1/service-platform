@@ -72,6 +72,25 @@ const serviceSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 const Service = mongoose.model('Service', serviceSchema);
 
+// ========== MODÈLE MESSAGE ==========
+const messageSchema = new mongoose.Schema({
+    expediteurId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    destinataireId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    sujet: { type: String, default: "" },
+    contenu: { type: String, required: true },
+    lu: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now },
+    conversationId: { type: String, required: true }
+});
+
+const Message = mongoose.model("Message", messageSchema);
+
+// Fonction pour générer un conversationId
+const generateConversationId = (userId1, userId2) => {
+    return [userId1.toString(), userId2.toString()].sort().join("_");
+};
+
+
 // ========== MIDDLEWARE ==========
 const requireAuth = (req, res, next) => {
     if (!req.session.userId) {
