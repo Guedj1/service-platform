@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Déploiement</title>
+</head>
+<body>
+    <h1>Test des nouvelles fonctionnalités</h1>
+    
+    <h2>Vérifications :</h2>
+    <ul>
+        <li><a href="/notifications.html">Page Notifications</a></li>
+        <li><a href="/messages.html">Page Messages</a></li>
+        <li><a href="/api/notifications">API Notifications</a></li>
+        <li><a href="/api/messages">API Messages</a></li>
+    </ul>
+    
+    <p>Date du déploiement: <span id="date"></span></p>
+    
+    <script>
+        document.getElementById('date').textContent = new Date().toLocaleString();
+        
+        async function testAPI(endpoint) {
+            try {
+                const response = await fetch(endpoint);
+                const result = await response.json();
+                console.log(`${endpoint}:`, result);
+                return { success: true, data: result };
+            } catch (error) {
+                console.error(`${endpoint} error:`, error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Début des tests...');
+            
+            const endpoints = [
+                '/api/notifications',
+                '/api/messages'
+            ];
+            
+            const resultsDiv = document.createElement('div');
+            resultsDiv.innerHTML = '<h2>Résultats des tests API:</h2>';
+            document.body.appendChild(resultsDiv);
+            
+            for (const endpoint of endpoints) {
+                const result = await testAPI(endpoint);
+                const status = result.success ? '✅' : '❌';
+                const resultElement = document.createElement('p');
+                resultElement.innerHTML = `${status} <strong>${endpoint}</strong>: ${result.success ? 'Fonctionne' : 'Échec'}`;
+                resultsDiv.appendChild(resultElement);
+            }
+        });
+    </script>
+</body>
+</html>
