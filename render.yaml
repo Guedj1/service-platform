@@ -3,5 +3,8 @@ services:
     name: servicesn-platform
     env: node
     buildCommand: npm install
-    startCommand: node server.js
-    rootDir: .
+    startCommand: npm start
+    healthCheckPath: /test
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
