@@ -1,158 +1,74 @@
-require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
-const mongoose = require('mongoose');
-const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Connexion MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB connecté'))
-  .catch(err => console.error('❌ MongoDB erreur:', err));
+const fs = require('fs');
+const path = require('path');
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'client')));
 
-// Sessions
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
-    ttl: 14 * 24 * 60 * 60 // 14 jours
-  }),
-  cookie: {
-    secure: false,
-    maxAge: 1000 * 60 * 60 * 24 * 14
-  }
-}));
-
-// Modèle User simple
-const UserSchema = new mongoose.Schema({
-  email: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-  nom: String,
-  prenom: String,
-  telephone: String,
-  role: { type: String, default: 'client' }
-});
-const User = mongoose.model('User', UserSchema);
+// Servir les fichiers statiques depuis le dossier public
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes API
-app.post('/api/register', async (req, res) => {
-  try {
-    const { email, password, nom, prenom, telephone, role } = req.body;
-    
-    // Vérifier si l'utilisateur existe
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ success: false, message: 'Email déjà utilisé' });
-    }
-    
-    // Créer l'utilisateur
-    const user = new User({ email, password, nom, prenom, telephone, role });
-    await user.save();
-    
-    // Créer la session
-    req.session.userId = user._id;
-    req.session.user = { id: user._id, email, nom, prenom, role };
-    
-    res.json({ 
-      success: true, 
-      message: 'Inscription réussie!',
-      user: req.session.user,
-      redirect: '/dashboard.html'
+try {
+    app.use('/api/notifications', require('./api/notifications'));
+    console.log('✅ Notifications route loaded');
+} catch (e) {
+    console.log("❌ Notifications route error:", e.message);
+}
+
+try {
+    app.use('/api/messages', require('./api/messages'));
+    console.log('✅ Messages route loaded');
+} catch (e) {
+    console.log("❌ Messages route error:", e.message);
+}
+
+// Route de test
+app.get('/test', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Server is working',
+        timestamp: new Date(),
+        files: {
+            notifications: fs.existsSync('./api/notifications.js'),
+            messages: fs.existsSync('./api/messages.js'),
+            public: fs.existsSync('./public'),
+            currentDir: __dirname
+        }
     });
-    
-  } catch (error) {
-    console.error('Erreur inscription:', error);
-    res.status(500).json({ success: false, message: 'Erreur serveur' });
-  }
 });
 
-app.post('/api/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    // Trouver l'utilisateur
-    const user = await User.findOne({ email });
-    if (!user || user.password !== password) {
-      return res.status(401).json({ success: false, message: 'Email ou mot de passe incorrect' });
-    }
-    
-    // Créer la session
-    req.session.userId = user._id;
-    req.session.user = { 
-      id: user._id, 
-      email: user.email, 
-      nom: user.nom, 
-      prenom: user.prenom, 
-      role: user.role 
-    };
-    
-    res.json({ 
-      success: true, 
-      message: 'Connexion réussie!',
-      user: req.session.user,
-      redirect: '/dashboard.html'
+// Route pour vérifier l'accès aux fichiers
+app.get('/check-files', (req, res) => {
+    const files = ['notifications.html', 'messages.html', 'index.html'];
+    const results = {};
+    files.forEach(file => {
+        results[file] = fs.existsSync(path.join(__dirname, 'public', file));
     });
-    
-  } catch (error) {
-    console.error('Erreur connexion:', error);
-    res.status(500).json({ success: false, message: 'Erreur serveur' });
-  }
+    res.json(results);
 });
 
-app.post('/api/logout', (req, res) => {
-  req.session.destroy();
-  res.json({ success: true, message: 'Déconnecté', redirect: '/' });
+// Routes directes pour les pages
+app.get('/notifications.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'notifications.html'));
 });
 
-app.get('/api/check-auth', (req, res) => {
-  if (req.session.userId) {
-    res.json({ isAuthenticated: true, user: req.session.user });
-  } else {
-    res.json({ isAuthenticated: false });
-  }
+app.get('/messages.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'messages.html'));
 });
 
-// Routes pages HTML
+// Route par défaut
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'index.html'));
-});
-
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'login.html'));
-});
-
-app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'register.html'));
-});
-
-app.get('/dashboard', (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect('/login');
-  }
-  res.sendFile(path.join(__dirname, 'client', 'dashboard.html'));
-});
-
-// Redirections contact
-app.get('/contact/whatsapp', (req, res) => {
-  res.redirect('https://wa.me/221761642285?text=Bonjour%20ServiceN%20Platform');
-});
-
-app.get('/contact/email', (req, res) => {
-  res.redirect('mailto:louis.cicariot.tek.workspace@gmail.com?subject=ServiceN%20Platform');
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Démarrer le serveur
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-  console.log(`📧 Email: /contact/email`);
-  console.log(`📱 WhatsApp: /contact/whatsapp`);
+    console.log(`🚀 ServiceN Platform - Version Stable`);
+    console.log(`Port: ${PORT}`);
+    console.log(`Current directory: ${__dirname}`);
+    console.log(`Public directory: ${path.join(__dirname, 'public')}`);
 });
