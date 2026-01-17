@@ -60,3 +60,35 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
+
+// Route de diagnostic complète
+app.get('/diagnostic', (req, res) => {
+    const fs = require('fs');
+    const path = require('path');
+    
+    const files = {
+        'server.js': fs.existsSync('server.js'),
+        'server/server.js': fs.existsSync('server/server.js'),
+        'api/notifications.js': fs.existsSync('api/notifications.js'),
+        'api/messages.js': fs.existsSync('api/messages.js'),
+        'public/notifications.html': fs.existsSync('public/notifications.html'),
+        'public/messages.html': fs.existsSync('public/messages.html'),
+        'package.json': fs.existsSync('package.json')
+    };
+    
+    res.json({
+        status: 'diagnostic',
+        timestamp: new Date(),
+        files: files,
+        env: {
+            PORT: process.env.PORT,
+            NODE_ENV: process.env.NODE_ENV
+        },
+        urls: {
+            notifications: 'https://servicesn-platform.onrender.com/notifications.html',
+            messages: 'https://servicesn-platform.onrender.com/messages.html',
+            api_notifications: 'https://servicesn-platform.onrender.com/api/notifications',
+            api_messages: 'https://servicesn-platform.onrender.com/api/messages'
+        }
+    });
+});
