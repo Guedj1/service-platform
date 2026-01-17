@@ -1,15 +1,7 @@
 services:
   - type: web
-    name: servicen-platform
+    name: servicesn-platform
     env: node
     buildCommand: npm install
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: MONGODB_URI
-        sync: false
-      - key: SESSION_SECRET
-        generateValue: true
-    healthCheckPath: /health
-    autoDeploy: true
+    startCommand: node server.js
+    rootDir: .
