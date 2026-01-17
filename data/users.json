@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1768578592393",
+    "email": "test@example.com",
+    "password": "test123",
+    "name": "Test User",
+    "userType": "provider",
+    "createdAt": "2026-01-16T15:49:52.393Z",
+    "services": [],
+    "applications": [],
+    "rating": 0,
+    "bio": ""
+  }
+]
