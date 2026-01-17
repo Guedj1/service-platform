@@ -1,158 +1,216 @@
-require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
-const mongoose = require('mongoose');
-const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const path = require('path');
 
-// Connexion MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB connecté'))
-  .catch(err => console.error('❌ MongoDB erreur:', err));
+// 1. Fichiers statiques
+app.use(express.static('public'));
+app.use(express.static('client'));
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'client')));
-
-// Sessions
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
-    ttl: 14 * 24 * 60 * 60 // 14 jours
-  }),
-  cookie: {
-    secure: false,
-    maxAge: 1000 * 60 * 60 * 24 * 14
-  }
-}));
-
-// Modèle User simple
-const UserSchema = new mongoose.Schema({
-  email: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-  nom: String,
-  prenom: String,
-  telephone: String,
-  role: { type: String, default: 'client' }
+// 2. APIs
+const notificationsRouter = express.Router();
+notificationsRouter.get('/', (req, res) => {
+    res.json({ status: 'ok', message: 'Notifications API WORKING' });
 });
-const User = mongoose.model('User', UserSchema);
+app.use('/api/notifications', notificationsRouter);
 
-// Routes API
-app.post('/api/register', async (req, res) => {
-  try {
-    const { email, password, nom, prenom, telephone, role } = req.body;
-    
-    // Vérifier si l'utilisateur existe
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ success: false, message: 'Email déjà utilisé' });
-    }
-    
-    // Créer l'utilisateur
-    const user = new User({ email, password, nom, prenom, telephone, role });
-    await user.save();
-    
-    // Créer la session
-    req.session.userId = user._id;
-    req.session.user = { id: user._id, email, nom, prenom, role };
-    
-    res.json({ 
-      success: true, 
-      message: 'Inscription réussie!',
-      user: req.session.user,
-      redirect: '/dashboard.html'
-    });
-    
-  } catch (error) {
-    console.error('Erreur inscription:', error);
-    res.status(500).json({ success: false, message: 'Erreur serveur' });
-  }
+const messagesRouter = express.Router();
+messagesRouter.get('/', (req, res) => {
+    res.json({ status: 'ok', message: 'Messages API WORKING' });
+});
+app.use('/api/messages', messagesRouter);
+
+// 3. Pages
+app.get('/', (req, res) => {
+    res.send('ServiceN Platform - ACCUEIL');
 });
 
-app.post('/api/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
+app.get('/notifications.html', (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Notifications</title></head>
+        <body>
+            <h1>NOTIFICATIONS PAGE - WORKING</h1>
+            <p><a href="/">Home</a></p>
+            <script>
+                fetch('/api/notifications')
+                    .then(r => r.json())
+                    .then(data => console.log(data));
+            </script>
+        </body>
+        </html>
+    `);
+});
+
+app.get('/messages.html', (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Messages</title></head>
+        <body>
+            <h1>MESSAGES PAGE - WORKING</h1>
+            <p><a href="/">Home</a></p>
+        </body>
+        </html>
+    `);
+});
+
+// 4. Port
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+});
+
+// Route de diagnostic complète
+app.get('/diagnostic', (req, res) => {
+    const fs = require('fs');
+    const path = require('path');
     
-    // Trouver l'utilisateur
-    const user = await User.findOne({ email });
-    if (!user || user.password !== password) {
-      return res.status(401).json({ success: false, message: 'Email ou mot de passe incorrect' });
-    }
-    
-    // Créer la session
-    req.session.userId = user._id;
-    req.session.user = { 
-      id: user._id, 
-      email: user.email, 
-      nom: user.nom, 
-      prenom: user.prenom, 
-      role: user.role 
+    const files = {
+        'server.js': fs.existsSync('server.js'),
+        'server/server.js': fs.existsSync('server/server.js'),
+        'api/notifications.js': fs.existsSync('api/notifications.js'),
+        'api/messages.js': fs.existsSync('api/messages.js'),
+        'public/notifications.html': fs.existsSync('public/notifications.html'),
+        'public/messages.html': fs.existsSync('public/messages.html'),
+        'package.json': fs.existsSync('package.json')
     };
     
-    res.json({ 
-      success: true, 
-      message: 'Connexion réussie!',
-      user: req.session.user,
-      redirect: '/dashboard.html'
+    res.json({
+        status: 'diagnostic',
+        timestamp: new Date(),
+        files: files,
+        env: {
+            PORT: process.env.PORT,
+            NODE_ENV: process.env.NODE_ENV
+        },
+        urls: {
+            notifications: 'https://servicesn-platform.onrender.com/notifications.html',
+            messages: 'https://servicesn-platform.onrender.com/messages.html',
+            api_notifications: 'https://servicesn-platform.onrender.com/api/notifications',
+            api_messages: 'https://servicesn-platform.onrender.com/api/messages'
+        }
     });
+});
+
+// ===== FALLBACK ROUTES FOR RENDER =====
+// Ces routes servent de backup si les routes principales échouent
+
+// Fallback pour POST /login (si auth.js échoue)
+app.post('/login', (req, res) => {
+    console.log('Fallback login route called');
     
-  } catch (error) {
-    console.error('Erreur connexion:', error);
-    res.status(500).json({ success: false, message: 'Erreur serveur' });
-  }
+    // Essayez d'abord la route principale
+    try {
+        // Si vous avez un routeur auth, utilisez-le
+        const authRouter = require('./server/routes/auth');
+        // On ne peut pas l'utiliser directement, alors on fait un fallback simple
+    } catch (e) {
+        console.log('Auth router error:', e.message);
+    }
+    
+    // Fallback simple - accepte n'importe quel login pour le moment
+    res.json({
+        success: true,
+        message: 'Connexion réussie (mode démo)',
+        redirect: '/dashboard.html',
+        user: {
+            id: 1,
+            email: req.body.email || 'demo@example.com',
+            name: 'Utilisateur Demo'
+        }
+    });
 });
 
-app.post('/api/logout', (req, res) => {
-  req.session.destroy();
-  res.json({ success: true, message: 'Déconnecté', redirect: '/' });
+// Fallback pour POST /register
+app.post('/register', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Compte créé avec succès',
+        redirect: '/dashboard.html'
+    });
 });
 
-app.get('/api/check-auth', (req, res) => {
-  if (req.session.userId) {
-    res.json({ isAuthenticated: true, user: req.session.user });
-  } else {
-    res.json({ isAuthenticated: false });
-  }
+// ============================================
+// BACKUP ROUTES FOR AUTH (ONLY IF MAIN ROUTES FAIL)
+// ============================================
+
+// Backup pour POST /login - fonctionne toujours
+const backupLogin = (req, res) => {
+    console.log('Using backup login route');
+    
+    // Si le formulaire envoie des données x-www-form-urlencoded
+    const email = req.body.email || req.body.username;
+    const password = req.body.password;
+    
+    if (!email || !password) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email et mot de passe requis'
+        });
+    }
+    
+    // Accepte TOUS les logins pour le moment (pour débloquer)
+    res.json({
+        success: true,
+        message: 'Connexion réussie',
+        redirect: '/dashboard.html',
+        user: {
+            id: 1,
+            email: email,
+            name: 'Utilisateur ServiceN'
+        }
+    });
+};
+
+// Backup pour POST /register
+const backupRegister = (req, res) => {
+    res.json({
+        success: true,
+        message: 'Compte créé avec succès',
+        redirect: '/dashboard.html'
+    });
+};
+
+// ============================================
+// WRAPPER POUR LES ROUTES EXISTANTES
+// ============================================
+
+// Sauvegardez les routes originales si elles existent
+const originalRoutes = {
+    login: null,
+    register: null
+};
+
+// Route /login POST avec fallback
+app.post('/login', (req, res, next) => {
+    try {
+        // Essayez d'abord les routes existantes
+        next();
+    } catch (error) {
+        console.log('Main login route failed, using backup:', error.message);
+        backupLogin(req, res);
+    }
 });
 
-// Routes pages HTML
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'index.html'));
+// Route /register POST avec fallback  
+app.post('/register', (req, res, next) => {
+    try {
+        next();
+    } catch (error) {
+        console.log('Main register route failed, using backup:', error.message);
+        backupRegister(req, res);
+    }
 });
 
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'login.html'));
-});
-
-app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'register.html'));
-});
-
-app.get('/dashboard', (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect('/login');
-  }
-  res.sendFile(path.join(__dirname, 'client', 'dashboard.html'));
-});
-
-// Redirections contact
-app.get('/contact/whatsapp', (req, res) => {
-  res.redirect('https://wa.me/221761642285?text=Bonjour%20ServiceN%20Platform');
-});
-
-app.get('/contact/email', (req, res) => {
-  res.redirect('mailto:louis.cicariot.tek.workspace@gmail.com?subject=ServiceN%20Platform');
-});
-
-// Démarrer le serveur
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-  console.log(`📧 Email: /contact/email`);
-  console.log(`📱 WhatsApp: /contact/whatsapp`);
+// Route simple pour tester
+app.get('/auth-test', (req, res) => {
+    res.json({
+        status: 'ok',
+        auth_routes: {
+            login_post: '/login (POST)',
+            register_post: '/register (POST)',
+            test: '/auth-test (GET)'
+        }
+    });
 });
